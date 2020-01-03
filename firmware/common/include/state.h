@@ -29,6 +29,7 @@ extern bool g_tsdz2_configurations_set;
 typedef struct rt_vars_struct {
 	uint16_t ui16_adc_battery_voltage;
 	uint8_t ui8_battery_current_x5;
+	uint8_t ui8_motor_current_x5;
 	uint8_t ui8_adc_throttle;
 	uint8_t ui8_throttle;
 	uint16_t ui16_adc_pedal_torque_sensor;
@@ -48,6 +49,7 @@ typedef struct rt_vars_struct {
 	uint32_t ui32_wheel_speed_sensor_tick_counter;
 	uint16_t ui16_battery_voltage_filtered_x10;
 	uint16_t ui16_battery_current_filtered_x5;
+	uint16_t ui16_motor_current_filtered_x5;
 	uint16_t ui16_battery_power_filtered_x50;
 	uint16_t ui16_battery_power_filtered;
 	uint16_t ui16_pedal_power_filtered;
@@ -69,6 +71,7 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_target_max_battery_power;
 	uint8_t ui8_battery_cells_number;
 	uint8_t ui8_battery_max_current;
+	uint8_t ui8_motor_max_current;
 	uint8_t ui8_ramp_up_amps_per_second_x10;
 	uint16_t ui16_battery_low_voltage_cut_off_x10;
 	uint16_t ui16_battery_voltage_reset_wh_counter_x10;
@@ -136,6 +139,7 @@ typedef struct ui_vars_struct {
 	uint32_t ui32_wheel_speed_sensor_tick_counter_offset;
 	uint16_t ui16_battery_voltage_filtered_x10;
 	uint16_t ui16_battery_current_filtered_x5;
+	uint16_t ui16_motor_current_filtered_x5;
 	uint16_t ui16_battery_power_filtered_x50;
 	uint16_t ui16_battery_power;
 	uint16_t ui16_pedal_torque_filtered;
@@ -158,6 +162,7 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_target_max_battery_power;
 	uint8_t ui8_battery_cells_number;
 	uint8_t ui8_battery_max_current;
+	uint8_t ui8_motor_max_current;
 	uint8_t ui8_ramp_up_amps_per_second_x10;
 	uint16_t ui16_battery_low_voltage_cut_off_x10;
 	uint16_t ui16_battery_voltage_reset_wh_counter_x10;
@@ -352,6 +357,7 @@ extern tsdz2_firmware_version_t g_tsdz2_firmware_version;
 // 0 equal to no filtering and no delay, higher values will increase filtering but will also add bigger delay
 #define BATTERY_VOLTAGE_FILTER_COEFFICIENT 3
 #define BATTERY_CURRENT_FILTER_COEFFICIENT 2
+#define MOTOR_CURRENT_FILTER_COEFFICIENT 2
 #define PEDAL_POWER_FILTER_COEFFICIENT     3
 #define PEDAL_CADENCE_FILTER_COEFFICIENT   3
 

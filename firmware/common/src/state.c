@@ -197,7 +197,10 @@ void rt_send_tx_package(uint8_t type) {
       // battery max current
       ui8_usart1_tx_buffer[8] = rt_vars.ui8_battery_max_current;
 
-      ui8_usart1_tx_buffer[9] = (rt_vars.ui8_startup_motor_power_boost_feature_enabled ? 1 : 0) |
+      // motor max current
+      ui8_usart1_tx_buffer[9] = rt_vars.ui8_motor_max_current;
+
+      ui8_usart1_tx_buffer[10] = (rt_vars.ui8_startup_motor_power_boost_feature_enabled ? 1 : 0) |
           (rt_vars.ui8_startup_motor_power_boost_always ? 2 : 0) |
           (rt_vars.ui8_startup_motor_power_boost_limit_power ? 4 : 0) |
           (rt_vars.ui8_torque_sensor_calibration_feature_enabled ? 8 : 0) |
@@ -206,27 +209,27 @@ void rt_send_tx_package(uint8_t type) {
           (rt_vars.ui8_motor_type ? 64 : 0);
 
       // startup motor power boost
-      ui8_usart1_tx_buffer[10] = rt_vars.ui8_startup_motor_power_boost_factor[((rt_vars.ui8_assist_level) - 1)];
+      ui8_usart1_tx_buffer[11] = rt_vars.ui8_startup_motor_power_boost_factor[((rt_vars.ui8_assist_level) - 1)];
       // startup motor power boost time
-      ui8_usart1_tx_buffer[11] = rt_vars.ui8_startup_motor_power_boost_time;
+      ui8_usart1_tx_buffer[12] = rt_vars.ui8_startup_motor_power_boost_time;
       // startup motor power boost fade time
-      ui8_usart1_tx_buffer[12] = rt_vars.ui8_startup_motor_power_boost_fade_time;
+      ui8_usart1_tx_buffer[13] = rt_vars.ui8_startup_motor_power_boost_fade_time;
 
       // motor over temperature min and max values to limit
-      ui8_usart1_tx_buffer[13] = rt_vars.ui8_motor_temperature_min_value_to_limit;
-      ui8_usart1_tx_buffer[14] = rt_vars.ui8_motor_temperature_max_value_to_limit;
+      ui8_usart1_tx_buffer[14] = rt_vars.ui8_motor_temperature_min_value_to_limit;
+      ui8_usart1_tx_buffer[15] = rt_vars.ui8_motor_temperature_max_value_to_limit;
 
-      ui8_usart1_tx_buffer[15] = rt_vars.ui8_ramp_up_amps_per_second_x10;
+      ui8_usart1_tx_buffer[16] = rt_vars.ui8_ramp_up_amps_per_second_x10;
 
       // TODO
       // target speed for cruise
-      ui8_usart1_tx_buffer[16] = 0;
+      ui8_usart1_tx_buffer[17] = 0;
 
       // motor temperature limit function or throttle
-      ui8_usart1_tx_buffer[17] = rt_vars.ui8_temperature_limit_feature_enabled & 3;
+      ui8_usart1_tx_buffer[18] = rt_vars.ui8_temperature_limit_feature_enabled & 3;
 
       // torque sensor calibration tables
-      uint8_t j = 18;
+      uint8_t j = 19;
       for (uint8_t i = 0; i < 8; i++) {
         ui8_usart1_tx_buffer[j++] = (uint8_t) rt_vars.ui16_torque_sensor_calibration_table_left[i][0];
         ui8_usart1_tx_buffer[j++] = (uint8_t) (rt_vars.ui16_torque_sensor_calibration_table_left[i][0] >> 8);
@@ -241,7 +244,7 @@ void rt_send_tx_package(uint8_t type) {
         ui8_usart1_tx_buffer[j++] = (uint8_t) (rt_vars.ui16_torque_sensor_calibration_table_right[i][1] >> 8);
       }
 
-      crc_len = 82;
+      crc_len = 83;
       ui8_usart1_tx_buffer[1] = crc_len;
 	    break;
 	}
@@ -264,6 +267,7 @@ void rt_send_tx_package(uint8_t type) {
 void rt_low_pass_filter_battery_voltage_current_power(void) {
 	static uint32_t ui32_battery_voltage_accumulated_x10000 = 0;
 	static uint16_t ui16_battery_current_accumulated_x5 = 0;
+	static uint16_t ui16_motor_current_accumulated_x5 = 0;
 
 	// low pass filter battery voltage
 	ui32_battery_voltage_accumulated_x10000 -=
@@ -276,7 +280,7 @@ void rt_low_pass_filter_battery_voltage_current_power(void) {
 			((uint32_t) (ui32_battery_voltage_accumulated_x10000
 					>> BATTERY_VOLTAGE_FILTER_COEFFICIENT)) / 1000;
 
-	// low pass filter batery current
+	// low pass filter battery current
 	ui16_battery_current_accumulated_x5 -= ui16_battery_current_accumulated_x5
 			>> BATTERY_CURRENT_FILTER_COEFFICIENT;
 	ui16_battery_current_accumulated_x5 +=
@@ -284,6 +288,15 @@ void rt_low_pass_filter_battery_voltage_current_power(void) {
 	rt_vars.ui16_battery_current_filtered_x5 =
 			ui16_battery_current_accumulated_x5
 					>> BATTERY_CURRENT_FILTER_COEFFICIENT;
+
+  // low pass filter motor current
+	ui16_motor_current_accumulated_x5 -= ui16_motor_current_accumulated_x5
+      >> MOTOR_CURRENT_FILTER_COEFFICIENT;
+	ui16_motor_current_accumulated_x5 +=
+      (uint16_t) rt_vars.ui8_motor_current_x5;
+  rt_vars.ui16_battery_current_filtered_x5 =
+      ui16_motor_current_accumulated_x5
+          >> MOTOR_CURRENT_FILTER_COEFFICIENT;
 
 	// battery power
 	rt_vars.ui16_battery_power_filtered_x50 =
@@ -506,6 +519,8 @@ void copy_rt_to_ui_vars(void) {
 			rt_vars.ui16_battery_voltage_filtered_x10;
 	ui_vars.ui16_battery_current_filtered_x5 =
 			rt_vars.ui16_battery_current_filtered_x5;
+  ui_vars.ui16_motor_current_filtered_x5 =
+      rt_vars.ui16_motor_current_filtered_x5;
 	ui_vars.ui16_battery_power_filtered_x50 =
 			rt_vars.ui16_battery_power_filtered_x50;
 	ui_vars.ui16_battery_power = rt_vars.ui16_battery_power_filtered;
@@ -675,41 +690,42 @@ void communications(void) {
         case 0:
           rt_vars.ui16_adc_battery_voltage = p_rx_buffer[3] | (((uint16_t) (p_rx_buffer[4] & 0x30)) << 4);
           rt_vars.ui8_battery_current_x5 = p_rx_buffer[5];
-          rt_vars.ui16_wheel_speed_x10 = ((uint16_t) p_rx_buffer[6]) | (((uint16_t) p_rx_buffer[7] << 8));
+          rt_vars.ui8_motor_current_x5 = p_rx_buffer[6];
+          rt_vars.ui16_wheel_speed_x10 = ((uint16_t) p_rx_buffer[7]) | (((uint16_t) p_rx_buffer[8] << 8));
 
           // for some reason, the previous value of rt_vars.ui16_wheel_speed_x10 is 16384, because p_rx_buffer[7] is 64,
           // this even when rx_buffer[6] and rx_buffer[7] are both 0 on the motor controller
           rt_vars.ui16_wheel_speed_x10 = rt_vars.ui16_wheel_speed_x10 & 0x7ff; // 0x7ff = 204.7km/h
 
-          uint8_t ui8_temp = p_rx_buffer[8];
+          uint8_t ui8_temp = p_rx_buffer[9];
           rt_vars.ui8_braking = ui8_temp & 1;
           rt_vars.ui8_motor_hall_sensors = (ui8_temp >> 1) & 7;
           rt_vars.ui8_pas_pedal_right = (ui8_temp >> 4) & 1;
-          rt_vars.ui8_adc_throttle = p_rx_buffer[9];
+          rt_vars.ui8_adc_throttle = p_rx_buffer[10];
 
           if (rt_vars.ui8_temperature_limit_feature_enabled) {
-            rt_vars.ui8_motor_temperature = p_rx_buffer[10];
+            rt_vars.ui8_motor_temperature = p_rx_buffer[11];
           } else {
-            rt_vars.ui8_throttle = p_rx_buffer[10];
+            rt_vars.ui8_throttle = p_rx_buffer[11];
           }
 
-          rt_vars.ui16_adc_pedal_torque_sensor = ((uint16_t) p_rx_buffer[11]) | (((uint16_t) (p_rx_buffer[7] & 0xC0)) << 2);
-          rt_vars.ui8_pedal_weight_with_offset = p_rx_buffer[12];
-          rt_vars.ui8_pedal_weight = p_rx_buffer[13];
+          rt_vars.ui16_adc_pedal_torque_sensor = ((uint16_t) p_rx_buffer[12]) | (((uint16_t) (p_rx_buffer[8] & 0xC0)) << 2);
+          rt_vars.ui8_pedal_weight_with_offset = p_rx_buffer[13];
+          rt_vars.ui8_pedal_weight = p_rx_buffer[14];
 
-          rt_vars.ui8_pedal_cadence = p_rx_buffer[14];
-          rt_vars.ui8_duty_cycle = p_rx_buffer[15];
-          rt_vars.ui16_motor_speed_erps = ((uint16_t) p_rx_buffer[16]) | ((uint16_t) p_rx_buffer[17] << 8);
-          rt_vars.ui8_foc_angle = p_rx_buffer[18];
-          rt_vars.ui8_error_states = p_rx_buffer[19];
-          rt_vars.ui8_temperature_current_limiting_value = p_rx_buffer[20];
+          rt_vars.ui8_pedal_cadence = p_rx_buffer[15];
+          rt_vars.ui8_duty_cycle = p_rx_buffer[16];
+          rt_vars.ui16_motor_speed_erps = ((uint16_t) p_rx_buffer[17]) | ((uint16_t) p_rx_buffer[18] << 8);
+          rt_vars.ui8_foc_angle = p_rx_buffer[19];
+          rt_vars.ui8_error_states = p_rx_buffer[20];
+          rt_vars.ui8_temperature_current_limiting_value = p_rx_buffer[21];
 
           uint32_t ui32_wheel_speed_sensor_tick_temp;
-          ui32_wheel_speed_sensor_tick_temp = ((uint32_t) p_rx_buffer[21]) |
-              (((uint32_t) p_rx_buffer[22]) << 8) | (((uint32_t) p_rx_buffer[23]) << 16);
+          ui32_wheel_speed_sensor_tick_temp = ((uint32_t) p_rx_buffer[22]) |
+              (((uint32_t) p_rx_buffer[23]) << 8) | (((uint32_t) p_rx_buffer[24]) << 16);
           rt_vars.ui32_wheel_speed_sensor_tick_counter = ui32_wheel_speed_sensor_tick_temp;
 
-          rt_vars.ui16_pedal_power_x10 = ((uint16_t) p_rx_buffer[24]) | ((uint16_t) p_rx_buffer[25] << 8);
+          rt_vars.ui16_pedal_power_x10 = ((uint16_t) p_rx_buffer[25]) | ((uint16_t) p_rx_buffer[26] << 8);
 
           periodic_answer_received = true;
           break;

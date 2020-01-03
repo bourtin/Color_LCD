@@ -29,6 +29,7 @@ uint8_t ui8_m_wheel_speed_decimal;
 static uint8_t ui8_walk_assist_state = 0;
 
 uint16_t ui16_m_battery_current_filtered_x10;
+uint16_t ui16_m_motor_current_filtered_x10;
 uint16_t ui16_m_battery_power_filtered;
 uint16_t ui16_m_pedal_power_filtered;
 
@@ -47,6 +48,7 @@ void DisplayResetToDefaults(void);
 void onSetConfigurationBatteryTotalWh(uint32_t v);
 void batteryTotalWh(void);
 void batteryCurrent(void);
+void motorCurrent(void);
 void batteryPower(void);
 void pedalPower(void);
 void thresholds(void);
@@ -75,6 +77,7 @@ Field humanPowerField = FIELD_READONLY_UINT("human power", &ui16_m_pedal_power_f
 Field batteryPowerField = FIELD_READONLY_UINT(_S("motor power", "motor pwr"), &ui16_m_battery_power_filtered, "W", true, .div_digits = 0, .warn_threshold = -1, .error_threshold = -1);
 Field batteryVoltageField = FIELD_READONLY_UINT("batt voltage", &ui_vars.ui16_battery_voltage_filtered_x10, "", true, .div_digits = 1, .warn_threshold = -1, .error_threshold = -1);
 Field batteryCurrentField = FIELD_READONLY_UINT("batt current", &ui16_m_battery_current_filtered_x10, "", true, .div_digits = 1, .warn_threshold = -1, .error_threshold = -1);
+Field motorCurrentField = FIELD_READONLY_UINT("motor current", &ui16_m_motor_current_filtered_x10, "", true, .div_digits = 1, .warn_threshold = -1, .error_threshold = -1);
 Field batterySOCField = FIELD_READONLY_UINT("battery SOC", &ui16_g_battery_soc_watts_hour, "%", true, .div_digits = 0, .warn_threshold = -1, .error_threshold = -1);
 Field motorTempField = FIELD_READONLY_UINT("motor temp", &ui_vars.ui8_motor_temperature, "C", true, .div_digits = 0, .warn_threshold = -1, .error_threshold = -1);
 Field motorErpsField = FIELD_READONLY_UINT("motor speed", &ui_vars.ui16_motor_speed_erps, "", true, .div_digits = 0, .warn_threshold = -1, .error_threshold = -1);
@@ -97,10 +100,11 @@ Field *customizables[] = {
     &batteryVoltageField, // 7
     &batteryCurrentField, // 8
     &batterySOCField, // 9
-		&motorTempField, // 10
-    &motorErpsField, // 11
-		&pwmDutyField, // 12
-		&motorFOCField, // 13
+    &motorCurrentField, // 10
+		&motorTempField, // 11
+    &motorErpsField, // 12
+		&pwmDutyField, // 13
+		&motorFOCField, // 14
 		NULL
 };
 
@@ -459,6 +463,7 @@ void screen_clock(void) {
     DisplayResetToDefaults();
     batteryTotalWh();
     batteryCurrent();
+    motorCurrent();
     batteryPower();
     pedalPower();
     thresholds();
@@ -874,6 +879,11 @@ void DisplayResetToDefaults(void) {
 void batteryCurrent(void) {
 
   ui16_m_battery_current_filtered_x10 = ui_vars.ui16_battery_current_filtered_x5 * 2;
+}
+
+void motorCurrent(void) {
+
+  ui16_m_motor_current_filtered_x10 = ui_vars.ui16_motor_current_filtered_x5 * 2;
 }
 
 void onSetConfigurationWheelOdometer(uint32_t v) {
