@@ -116,6 +116,7 @@ Field humanPowerFieldGraph = FIELD_READONLY_UINT("human power", &rt_vars.ui16_pe
 Field batteryPowerFieldGraph = FIELD_READONLY_UINT("motor power", &rt_vars.ui16_battery_power_filtered, "", false);
 Field batteryVoltageFieldGraph = FIELD_READONLY_UINT("battery voltage", &rt_vars.ui16_battery_voltage_filtered_x10, "", false, .div_digits = 1);
 Field batteryCurrentFieldGraph = FIELD_READONLY_UINT("battery current", &rt_vars.ui16_battery_current_filtered_x5, "", false, .div_digits = 1); // FIXME, change this to x10 so div_digits will work
+Field motorCurrentFieldGraph = FIELD_READONLY_UINT("motor current", &rt_vars.ui16_motor_current_filtered_x5, "", false, .div_digits = 1); // FIXME, change this to x10 so div_digits will work
 Field batterySOCFieldGraph = FIELD_READONLY_UINT("battery SOC", &ui16_g_battery_soc_watts_hour, "", false);
 Field motorTempFieldGraph = FIELD_READONLY_UINT("motor temperature", &rt_vars.ui8_motor_temperature, "C", false);
 Field motorErpsFieldGraph = FIELD_READONLY_UINT("motor speed", &rt_vars.ui16_motor_speed_erps, "", false);

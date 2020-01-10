@@ -140,9 +140,6 @@ void parse_simmotor() {
 	// error states
 	rt_vars.ui8_error_states = NO_ERROR; // fake(0, ERROR_MAX);
 
-	// temperature actual limiting value
-	rt_vars.ui8_temperature_current_limiting_value = fake(0, 100);
-
 	// wheel_speed_sensor_tick_counter
 
     if (diststore > rt_vars.ui16_wheel_perimeter) {
@@ -267,6 +264,7 @@ void rt_send_tx_package(uint8_t type) {
 void rt_low_pass_filter_battery_voltage_current_power(void) {
 	static uint32_t ui32_battery_voltage_accumulated_x10000 = 0;
 	static uint16_t ui16_battery_current_accumulated_x5 = 0;
+	static uint16_t ui16_motor_current_accumulated_x5 = 0;
 
 	// low pass filter battery voltage
 	ui32_battery_voltage_accumulated_x10000 -=
@@ -279,7 +277,7 @@ void rt_low_pass_filter_battery_voltage_current_power(void) {
 			((uint32_t) (ui32_battery_voltage_accumulated_x10000
 					>> BATTERY_VOLTAGE_FILTER_COEFFICIENT)) / 1000;
 
-	// low pass filter batery current
+	// low pass filter battery current
 	ui16_battery_current_accumulated_x5 -= ui16_battery_current_accumulated_x5
 			>> BATTERY_CURRENT_FILTER_COEFFICIENT;
 	ui16_battery_current_accumulated_x5 +=
@@ -287,6 +285,15 @@ void rt_low_pass_filter_battery_voltage_current_power(void) {
 	rt_vars.ui16_battery_current_filtered_x5 =
 			ui16_battery_current_accumulated_x5
 					>> BATTERY_CURRENT_FILTER_COEFFICIENT;
+
+  // low pass filter motor current
+  ui16_motor_current_accumulated_x5 -= ui16_motor_current_accumulated_x5
+      >> MOTOR_CURRENT_FILTER_COEFFICIENT;
+  ui16_motor_current_accumulated_x5 +=
+      (uint16_t) rt_vars.ui8_motor_current_x5;
+  rt_vars.ui16_battery_current_filtered_x5 =
+      ui16_motor_current_accumulated_x5
+          >> BATTERY_CURRENT_FILTER_COEFFICIENT;
 
 	// battery power
 	rt_vars.ui16_battery_power_filtered_x50 =
@@ -500,8 +507,6 @@ void copy_rt_to_ui_vars(void) {
 	ui_vars.ui16_motor_speed_erps = rt_vars.ui16_motor_speed_erps;
 	ui_vars.ui8_motor_hall_sensors = rt_vars.ui8_motor_hall_sensors;
 	ui_vars.ui8_pas_pedal_right = rt_vars.ui8_pas_pedal_right;
-	ui_vars.ui8_temperature_current_limiting_value =
-			rt_vars.ui8_temperature_current_limiting_value;
 	ui_vars.ui8_motor_temperature = rt_vars.ui8_motor_temperature;
 	ui_vars.ui32_wheel_speed_sensor_tick_counter =
 			rt_vars.ui32_wheel_speed_sensor_tick_counter;
@@ -706,14 +711,14 @@ void communications(void) {
           rt_vars.ui16_motor_speed_erps = ((uint16_t) p_rx_buffer[16]) | ((uint16_t) p_rx_buffer[17] << 8);
           rt_vars.ui8_foc_angle = p_rx_buffer[18];
           rt_vars.ui8_error_states = p_rx_buffer[19];
-          rt_vars.ui8_temperature_current_limiting_value = p_rx_buffer[20];
 
           uint32_t ui32_wheel_speed_sensor_tick_temp;
-          ui32_wheel_speed_sensor_tick_temp = ((uint32_t) p_rx_buffer[21]) |
-              (((uint32_t) p_rx_buffer[22]) << 8) | (((uint32_t) p_rx_buffer[23]) << 16);
+          ui32_wheel_speed_sensor_tick_temp = ((uint32_t) p_rx_buffer[20]) |
+              (((uint32_t) p_rx_buffer[21]) << 8) | (((uint32_t) p_rx_buffer[22]) << 16);
           rt_vars.ui32_wheel_speed_sensor_tick_counter = ui32_wheel_speed_sensor_tick_temp;
 
-          rt_vars.ui16_pedal_power_x10 = ((uint16_t) p_rx_buffer[24]) | ((uint16_t) p_rx_buffer[25] << 8);
+          rt_vars.ui16_pedal_power_x10 = ((uint16_t) p_rx_buffer[23]) | ((uint16_t) p_rx_buffer[24] << 8);
+          rt_vars.ui8_battery_current_x5 = p_rx_buffer[25];
 
           periodic_answer_received = true;
           break;
