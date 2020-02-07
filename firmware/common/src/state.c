@@ -254,7 +254,9 @@ void rt_send_tx_package(uint8_t type) {
       // battery current min ADC
       ui8_usart1_tx_buffer[81] = rt_vars.ui8_battery_current_min_adc;
 
-      crc_len = 83;
+      ui8_usart1_tx_buffer[82] = rt_vars.ui8_ramp_down_amps_per_second_x10;
+
+      crc_len = 84;
       ui8_usart1_tx_buffer[1] = crc_len;
 	    break;
 	}
@@ -561,6 +563,8 @@ void copy_rt_to_ui_vars(void) {
 	rt_vars.ui8_battery_current_min_adc = ui_vars.ui8_motor_current_min_adc;
 	rt_vars.ui8_ramp_up_amps_per_second_x10 =
 			ui_vars.ui8_ramp_up_amps_per_second_x10;
+  rt_vars.ui8_ramp_down_amps_per_second_x10 =
+      ui_vars.ui8_ramp_down_amps_per_second_x10;
 	rt_vars.ui8_target_max_battery_power = ui_vars.ui8_target_max_battery_power;
 	rt_vars.ui16_battery_low_voltage_cut_off_x10 =
 			ui_vars.ui16_battery_low_voltage_cut_off_x10;

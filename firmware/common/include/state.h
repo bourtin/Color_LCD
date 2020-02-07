@@ -10,9 +10,14 @@
 #define ERROR_TORQUE_APPLIED_DURING_POWER_ON    (1 << 3)
 #define ERROR_BRAKE_APPLIED_DURING_POWER_ON     (1 << 4)
 #define ERROR_THROTTLE_APPLIED_DURING_POWER_ON  (1 << 5)
-#define ERROR_NO_SPEED_SENSOR_DETECTED          (1 << 6)
-#define ERROR_LOW_CONTROLLER_VOLTAGE            (1 << 7) // controller works with no less than 15 V so give error code if voltage is too low
-#define ERROR_MAX                               ERROR_LOW_CONTROLLER_VOLTAGE
+//#define ERROR_NO_SPEED_SENSOR_DETECTED          (1 << 6)
+//#define ERROR_LOW_CONTROLLER_VOLTAGE            (1 << 7) // controller works with no less than 15 V so give error code if voltage is too low
+
+#define ERROR_HALL_SENSORS          		        (1 << 6)
+#define ERROR_OVER_CURRENT	                    (1 << 7)
+
+//#define ERROR_MAX                               ERROR_LOW_CONTROLLER_VOLTAGE
+#define ERROR_MAX                               ERROR_OVER_CURRENT
 
 typedef enum {
   COMMUNICATIONS_READY = 0,
@@ -73,6 +78,7 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_motor_max_current;
   uint8_t ui8_battery_current_min_adc;
 	uint8_t ui8_ramp_up_amps_per_second_x10;
+  uint8_t ui8_ramp_down_amps_per_second_x10;
 	uint16_t ui16_battery_low_voltage_cut_off_x10;
 	uint16_t ui16_battery_voltage_reset_wh_counter_x10;
 	uint16_t ui16_battery_pack_resistance_x1000;
@@ -165,6 +171,7 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_motor_max_current;
 	uint8_t ui8_motor_current_min_adc;
 	uint8_t ui8_ramp_up_amps_per_second_x10;
+	uint8_t ui8_ramp_down_amps_per_second_x10;
 	uint16_t ui16_battery_low_voltage_cut_off_x10;
 	uint16_t ui16_battery_voltage_reset_wh_counter_x10;
 	uint16_t ui16_battery_pack_resistance_x1000;

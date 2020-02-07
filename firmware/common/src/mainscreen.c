@@ -658,18 +658,24 @@ static void setWarning(ColorOp color, const char *str) {
 		strncpy(warningStr, str, sizeof(warningStr));
 }
 
-static const char *motorErrors[] = { "None", "No config", "Motor Blocked", "Torque Fault", "Brake Fault", "Throttle Fault", "Speed Fault", "Low Volt" };
+//static const char *motorErrors[] = { "None", "No config", "Motor Blocked", "Torque Fault", "Brake Fault", "Throttle Fault", "Speed Fault", "Low Volt" };
+static const char *motorErrors[] = { "None", "No config", "Motor Blocked", "Torque Fault", "Brake Fault", "Throttle Fault", "Hall Sensors fault", "Over current" };
 
 void warnings(void) {
   uint32_t motor_temp_limit = ui_vars.ui8_temperature_limit_feature_enabled & 1;
 
 	// High priorty faults in red
+if(ui_vars.ui8_error_states) {
+  const char *str = itoa(ui_vars.ui8_error_states);
+  setWarning(ColorError, str);
+  return;
+}
 
-	if(ui_vars.ui8_error_states) {
-		const char *str = (ui_vars.ui8_error_states > ERROR_MAX) ? "Unknown Motor" : motorErrors[ui_vars.ui8_error_states];
-		setWarning(ColorError, str);
-		return;
-	}
+//	if(ui_vars.ui8_error_states) {
+//		const char *str = (ui_vars.ui8_error_states > ERROR_MAX) ? "Unknown Motor" : motorErrors[ui_vars.ui8_error_states];
+//		setWarning(ColorError, str);
+//		return;
+//	}
 
 	if(motor_temp_limit &&
 	    ui_vars.ui8_motor_temperature >= ui_vars.ui8_motor_temperature_max_value_to_limit) {
