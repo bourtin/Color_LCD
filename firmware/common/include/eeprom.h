@@ -15,8 +15,8 @@
 
 // For compatible changes, just add new fields at the end of the table (they will be inited to 0xff for old eeprom images).  For incompatible
 // changes bump up EEPROM_MIN_COMPAT_VERSION and the user's EEPROM settings will be discarded.
-#define EEPROM_MIN_COMPAT_VERSION 0x26
-#define EEPROM_VERSION 0x26
+#define EEPROM_MIN_COMPAT_VERSION 0x27
+#define EEPROM_VERSION 0x27
 
 typedef struct {
   graph_auto_max_min_t auto_max_min;
@@ -39,7 +39,6 @@ typedef struct eeprom_data {
 	uint8_t ui8_motor_max_current;
   uint8_t ui8_motor_current_min_adc;
 	uint8_t ui8_ramp_up_amps_per_second_x10;
-	uint8_t ui8_ramp_down_amps_per_second_x10;
 	uint8_t ui8_battery_cells_number;
 	uint16_t ui16_battery_low_voltage_cut_off_x10;
 	uint8_t ui8_motor_type;
@@ -159,7 +158,6 @@ void eeprom_init_defaults(void);
 #define DEFAULT_VALUE_MOTOR_MAX_CURRENT                             16 // 16 amps
 #define DEFAULT_VALUE_CURRENT_MIN_ADC                               1 // 1 unit, 0.156 A
 #define DEFAULT_VALUE_RAMP_UP_AMPS_PER_SECOND_X10                   50 // 5.0 amps per second ramp up
-#define DEFAULT_VALUE_RAMP_DOWN_AMPS_PER_SECOND_X10                   50 // 5.0 amps per second ramp down
 #define DEFAULT_VALUE_TARGET_MAX_BATTERY_POWER                      0 // e.g. 20 = 20 * 25 = 500, 0 is disabled
 #define DEFAULT_VALUE_BATTERY_CELLS_NUMBER                          14 // 14 --> 52V
 #define DEFAULT_VALUE_BATTERY_LOW_VOLTAGE_CUT_OFF_X10               420 // 52v battery, LVC = 42.0 (3.0 * 14)

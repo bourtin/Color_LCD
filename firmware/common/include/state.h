@@ -78,7 +78,6 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_motor_max_current;
   uint8_t ui8_battery_current_min_adc;
 	uint8_t ui8_ramp_up_amps_per_second_x10;
-  uint8_t ui8_ramp_down_amps_per_second_x10;
 	uint16_t ui16_battery_low_voltage_cut_off_x10;
 	uint16_t ui16_battery_voltage_reset_wh_counter_x10;
 	uint16_t ui16_battery_pack_resistance_x1000;
@@ -171,7 +170,6 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_motor_max_current;
 	uint8_t ui8_motor_current_min_adc;
 	uint8_t ui8_ramp_up_amps_per_second_x10;
-	uint8_t ui8_ramp_down_amps_per_second_x10;
 	uint16_t ui16_battery_low_voltage_cut_off_x10;
 	uint16_t ui16_battery_voltage_reset_wh_counter_x10;
 	uint16_t ui16_battery_pack_resistance_x1000;

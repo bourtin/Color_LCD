@@ -40,7 +40,7 @@ else
   # LINUX
   OPENOCD_PATH := /usr/local/share/openocd/bin/
   OPENOCD_BIN := openocd
-  NRFUTIL := nrfutil
+  NRFUTIL := /home/cas/.local/bin/nrfutil
   #SREC_PATH := /usr/bin/
 endif
 
